@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>愛迪樂治療師個人每月KPI自評表（雷達圖）</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      background: #f5f5f7;
+      color: #222;
+    }
+    h1 {
+      margin: 0 0 8px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px 20px;
+      max-width: 1100px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px 16px;
+    }
+    label {
+      font-size: 12px;
+      color: #555;
+      display: block;
+      margin-bottom: 3px;
+    }
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 13px;
+      font-family: inherit;
+      resize: vertical;
+    }
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 1px rgba(79,70,229,0.18);
+    }
+    .kpi-row {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr 0.9fr 0.8fr;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .kpi-row-header {
+      font-weight: 600;
+      color: #444;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 3px;
+      margin-bottom: 4px;
+    }
+    .kpi-note {
+      grid-column: 1 / -1;
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      min-width: 70px;
+    }
+    .status-good {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .status-warn {
+      background: #fef9c3;
+      color: #854d0e;
+    }
+    .status-bad {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .status-none {
+      background: #e5e7eb;
+      color: #4b5563;
+    }
+    .button-row {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      background: #4f46e5;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    button:active { transform: translateY(1px); }
+    .small-text {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+    .chart-summary-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .chart-wrap {
+      max-width: 520px;
+      flex: 1 1 320px;
+    }
+    .summary-wrap {
+      flex: 1 1 280px;
+      min-width: 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .summary-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111827;
+    }
+    .summary-box {
+      white-space: pre-wrap;
+      font-size: 12px;
+      background: #111827;
+      color: #e5e7eb;
+      padding: 10px 12px;
+      border-radius: 10px;
+      max-height: 260px;
+      overflow: auto;
+    }
+  </style>
+  <!-- 雷達圖使用 Chart.js CDN，需要上網才能載入 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>愛迪樂治療師個人每月KPI自評表</h1>
+  <div class="subtitle">
+    每位治療師每月填寫一次：系統會幫你算出每個 KPI 狀態，並用雷達圖＋文字摘要顯示本月整體表現。<br>
+    🟢 = 達標　🟡 = 接近／需注意　🔴 = 需要討論與支援。
+  </div>
+
+  <!-- 基本資料 -->
+  <div class="card">
+    <div class="card-title">一、基本資訊</div>
+    <div class="grid">
+      <div>
+        <label>治療師姓名</label>
+        <input type="text" id="name" placeholder="例：胤甫" />
+      </div>
+      <div>
+        <label>分所</label>
+        <select id="branch">
+          <option value="">請選擇</option>
+          <option>松江所</option>
+          <option>中山所</option>
+        </select>
+      </div>
+      <div>
+        <label>月份</label>
+        <select id="month">
+          <option value="">請選擇</option>
+          <option>1 月</option><option>2 月</option><option>3 月</option>
+          <option>4 月</option><option>5 月</option><option>6 月</option>
+          <option>7 月</option><option>8 月</option><option>9 月</option>
+          <option>10 月</option><option>11 月</option><option>12 月</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI 數字 -->
+  <div class="card">
+    <div class="card-title">二、量能與品質 KPI（含說明）</div>
+    <div class="small-text">
+      數字可由系統 / Google Sheet 提供，或依規則自行統計。右邊顏色會即時顯示狀態。
+    </div>
+    <div class="kpi-row kpi-row-header">
+      <div>KPI 指標</div>
+      <div>目標值</div>
+      <div>本月數值</div>
+      <div>狀態</div>
+    </div>
+
+    <!-- 滿班率 -->
+    <div class="kpi-row">
+      <div>滿班率（%）</div>
+      <div>≥ 80%</div>
+      <div><input type="number" id="kpi-full" step="0.1" placeholder="%" /></div>
+      <div><span class="status-pill status-none" id="status-full">尚無</span></div>
+    </div>
+    <div class="kpi-note">說明：當月實際看診時段 ÷ 可排時段。代表你是否有穩定的個案量。</div>
+
+    <!-- 新增個案數 -->
+    <div class="kpi-row">
+      <div>新增個案數（人）</div>
+      <div>建議 ≥ 15 人（可調整）</div>
+      <div><input type="number" id="kpi-new" step="1" placeholder="人數" /></div>
+      <div><span class="status-pill status-none" id="status-new">尚無</span></div>
+    </div>
+    <div class="kpi-note">說明：本月第一次來找你的新個案。反映曝光度、口碑與新需求。</div>
+
+    <!-- 固定客群數 -->
+    <div class="kpi-row">
+      <div>固定客群數（人）</div>
+      <div>建議 ≥ 30 人（可調整）</div>
+      <div><input type="number" id="kpi-retain" step="1" placeholder="人數" /></div>
+      <div><span class="status-pill status-none" id="status-retain">尚無</span></div>
+    </div>
+    <div class="kpi-note">說明：持續回來追蹤或保養的個案。是你穩定量能與信任度的基底。</div>
+
+    <!-- 總治療時數 -->
+    <div class="kpi-row">
+      <div>總治療時數（hr）</div>
+      <div>依分所標準（例：≥ 120 hr）</div>
+      <div><input type="number" id="kpi-hours" step="0.1" placeholder="小時" /></div>
+      <div><span class="status-pill status-none" id="status-hours">尚無</span></div>
+    </div>
+    <div class="kpi-note">說明：本月實際治療總時數。可以搭配滿班率一起看負荷與效能。</div>
+
+    <!-- 問診轉換率 -->
+    <div class="kpi-row">
+      <div>問診轉換率（%）</div>
+      <div>建議 ≥ 60%</div>
+      <div><input type="number" id="kpi-conv" step="0.1" placeholder="%" /></div>
+      <div><span class="status-pill status-none" id="status-conv">尚無</span></div>
+    </div>
+    <div class="kpi-note">說明：從諮詢 / 詢問到實際開始療程的比例。反映你的說明與信任建立能力。</div>
+
+    <!-- 回診率 -->
+    <div class="kpi-row">
+      <div>回診率（%）</div>
+      <div>建議 ≥ 70%</div>
+      <div><input type="number" id="kpi-return" step="0.1" placeholder="%" /></div>
+      <div><span class="status-pill status-none" id="status-return">尚無</span></div>
+    </div>
+    <div class="kpi-note">說明：有沒有願意再回來繼續療程。反映個案體驗與關係經營。</div>
+
+    <!-- 滿意度 -->
+    <div class="kpi-row">
+      <div>平均滿意度（分）</div>
+      <div>≥ 4.6 / 5</div>
+      <div><input type="number" id="kpi-satis" step="0.01" placeholder="1–5" /></div>
+      <div><span class="status-pill status-none" id="status-satis">尚無</span></div>
+    </div>
+    <div class="kpi-note">說明：個案在問卷或回饋中對你的整體滿意程度。</div>
+
+    <!-- 客訴件數 -->
+    <div class="kpi-row">
+      <div>客訴件數（件）</div>
+      <div>0～1 件</div>
+      <div><input type="number" id="kpi-complain" step="1" placeholder="件數" /></div>
+      <div><span class="status-pill status-none" id="status-complain">尚無</span></div>
+    </div>
+    <div class="kpi-note">說明：與你相關、需要主管介入處理的正式客訴件數。</div>
+  </div>
+
+  <!-- 成長與貢獻 -->
+  <div class="card">
+    <div class="card-title">三、成長與團隊貢獻（文字描述）</div>
+    <div class="grid">
+      <div>
+        <label>本月技術成長重點</label>
+        <textarea id="growth" rows="4" placeholder="例：本月練習 MAT 評估 10 人，學會 XXX 技巧…"></textarea>
+      </div>
+      <div>
+        <label>本月對團隊的貢獻與協作</label>
+        <textarea id="teamwork" rows="4" placeholder="例：支援某時段門診、分享銀髮個案處理經驗…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 雷達圖 + 摘要 -->
+  <div class="card">
+    <div class="card-title">四、雷達圖＋本月摘要</div>
+    <div class="small-text">
+      按下「產生雷達圖」後：左邊會顯示 0–100 分的 KPI 雷達圖，右邊會產生可複製的文字摘要，方便貼到 Line / Notion / 表單。
+    </div>
+    <div class="button-row">
+      <button id="btn-generate">產生雷達圖與摘要</button>
+      <button class="secondary" id="btn-clear">清空表單</button>
+    </div>
+
+    <div class="chart-summary-row">
+      <div class="chart-wrap">
+        <canvas id="radarCanvas"></canvas>
+      </div>
+      <div class="summary-wrap">
+        <div class="summary-title">本月個人摘要（可複製貼上）</div>
+        <div class="summary-box" id="summaryBox"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // KPI 高低好壞簡易判斷（標示顏色用）
+    function evalHigher(value, good, warn) {
+      if (value === "" || value === null) return { label: "尚無", cls: "status-none" };
+      const v = Number(value);
+      if (v >= good) return { label: "🟢 達標", cls: "status-good" };
+      if (v >= warn) return { label: "🟡 注意", cls: "status-warn" };
+      return { label: "🔴 需改善", cls: "status-bad" };
+    }
+    function evalLower(value, goodMax) {
+      if (value === "" || value === null) return { label: "尚無", cls: "status-none" };
+      const v = Number(value);
+      if (v <= goodMax) return { label: "🟢 良好", cls: "status-good" };
+      if (v <= goodMax + 1) return { label: "🟡 注意", cls: "status-warn" };
+      return { label: "🔴 偏高", cls: "status-bad" };
+    }
+
+    function updateStatus() {
+      // 滿班率
+      const full = document.getElementById("kpi-full").value;
+      const sFull = evalHigher(full, 80, 70);
+      const fullNode = document.getElementById("status-full");
+      fullNode.textContent = sFull.label;
+      fullNode.className = "status-pill " + sFull.cls;
+
+      // 新增個案
+      const n = document.getElementById("kpi-new").value;
+      const sNew = evalHigher(n, 15, 8);
+      const newNode = document.getElementById("status-new");
+      newNode.textContent = sNew.label;
+      newNode.className = "status-pill " + sNew.cls;
+
+      // 固定客群
+      const r = document.getElementById("kpi-retain").value;
+      const sRet = evalHigher(r, 30, 15);
+      const retNode = document.getElementById("status-retain");
+      retNode.textContent = sRet.label;
+      retNode.className = "status-pill " + sRet.cls;
+
+      // 時數
+      const h = document.getElementById("kpi-hours").value;
+      const sH = evalHigher(h, 120, 80);
+      const hNode = document.getElementById("status-hours");
+      hNode.textContent = sH.label;
+      hNode.className = "status-pill " + sH.cls;
+
+      // 問診轉換率
+      const conv = document.getElementById("kpi-conv").value;
+      const sConv = evalHigher(conv, 60, 50);
+      const convNode = document.getElementById("status-conv");
+      convNode.textContent = sConv.label;
+      convNode.className = "status-pill " + sConv.cls;
+
+      // 回診率
+      const retRate = document.getElementById("kpi-return").value;
+      const sRetRate = evalHigher(retRate, 70, 60);
+      const retRateNode = document.getElementById("status-return");
+      retRateNode.textContent = sRetRate.label;
+      retRateNode.className = "status-pill " + sRetRate.cls;
+
+      // 滿意度
+      const sat = document.getElementById("kpi-satis").value;
+      const sSat = evalHigher(sat, 4.6, 4.3);
+      const satNode = document.getElementById("status-satis");
+      satNode.textContent = sSat.label;
+      satNode.className = "status-pill " + sSat.cls;
+
+      // 客訴
+      const c = document.getElementById("kpi-complain").value;
+      const sC = evalLower(c, 1);
+      const cNode = document.getElementById("status-complain");
+      cNode.textContent = sC.label;
+      cNode.className = "status-pill " + sC.cls;
+    }
+
+    ["kpi-full","kpi-new","kpi-retain","kpi-hours","kpi-conv","kpi-return","kpi-satis","kpi-complain"]
+      .forEach(id => {
+        document.getElementById(id).addEventListener("input", updateStatus);
+      });
+
+    let radarChart = null;
+
+    function generateRadarAndSummary() {
+      updateStatus();
+
+      const name = document.getElementById("name").value || "（未填姓名）";
+      const branch = document.getElementById("branch").value || "未填分所";
+      const month = document.getElementById("month").value || "未填月份";
+
+      const full = Number(document.getElementById("kpi-full").value || 0);
+      const n = Number(document.getElementById("kpi-new").value || 0);
+      const r = Number(document.getElementById("kpi-retain").value || 0);
+      const h = Number(document.getElementById("kpi-hours").value || 0);
+      const conv = Number(document.getElementById("kpi-conv").value || 0);
+      const retRate = Number(document.getElementById("kpi-return").value || 0);
+      const sat = Number(document.getElementById("kpi-satis").value || 0);
+      const c = Number(document.getElementById("kpi-complain").value || 0);
+
+      const growth = document.getElementById("growth").value || "（本月尚未填寫技術成長重點）";
+      const teamwork = document.getElementById("teamwork").value || "（本月尚未填寫團隊貢獻）";
+
+      // 把各 KPI 轉成 0–100 分
+      function clampScore(x) {
+        return Math.max(0, Math.min(100, x));
+      }
+
+      const scores = [
+        clampScore(full / 80 * 100),               // 滿班率
+        clampScore(n / 15 * 100),                  // 新增個案
+        clampScore(r / 30 * 100),                  // 固定客群
+        clampScore(h / 120 * 100),                 // 總時數
+        clampScore(conv / 60 * 100),               // 問診轉換
+        clampScore(retRate / 70 * 100),            // 回診率
+        clampScore((sat / 5) * 100),               // 滿意度
+        clampScore(c <= 1 ? 100 : (100 - (c - 1) * 20))  // 客訴
+      ];
+
+      // 建立雷達圖
+      const ctx = document.getElementById("radarCanvas").getContext("2d");
+      if (radarChart) {
+        radarChart.destroy();
+      }
+
+      radarChart = new Chart(ctx, {
+        type: "radar",
+        data: {
+          labels: [
+            "滿班率",
+            "新增個案",
+            "固定客群",
+            "總治療時數",
+            "問診轉換率",
+            "回診率",
+            "滿意度",
+            "客訴控制"
+          ],
+          datasets: [{
+            label: "達成度（0–100）",
+            data: scores,
+            fill: true,
+            backgroundColor: "rgba(79,70,229,0.2)",
+            borderColor: "rgba(79,70,229,1)",
+            pointBackgroundColor: "rgba(79,70,229,1)",
+            pointBorderColor: "#fff",
+            pointHoverRadius: 4,
+            pointRadius: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            r: {
+              suggestedMin: 0,
+              suggestedMax: 100,
+              ticks: { stepSize: 20, showLabelBackdrop: false },
+              grid: { color: "#e5e7eb" },
+              angleLines: { color: "#e5e7eb" },
+              pointLabels: { font: { size: 11 } }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      // 產生文字摘要
+      const summary = 
+`${month}｜${branch}｜${name} 的每月 KPI 自評
+
+📊 量能與品質指標：
+- 滿班率：${full ? full + " %" : "未填"}
+- 新增個案數：${n || "未填"} 人
+- 固定客群數：${r || "未填"} 人
+- 總治療時數：${h || "未填"} 小時
+- 問診轉換率：${conv ? conv + " %" : "未填"}
+- 回診率：${retRate ? retRate + " %" : "未填"}
+- 平均滿意度：${sat || "未填"} 分（1–5）
+- 客訴件數：${c || "未填"} 件
+
+🧠 本月技術成長重點：
+${growth}
+
+🤝 本月對團隊的貢獻與協作：
+${teamwork}
+`;
+
+      document.getElementById("summaryBox").textContent = summary;
+    }
+
+    document.getElementById("btn-generate").addEventListener("click", generateRadarAndSummary);
+
+    document.getElementById("btn-clear").addEventListener("click", () => {
+      if (!confirm("確定要清空所有欄位嗎？")) return;
+      document.querySelectorAll("input, select, textarea").forEach(el => el.value = "");
+      document.querySelectorAll(".status-pill").forEach(el => {
+        el.textContent = "尚無";
+        el.className = "status-pill status-none";
+      });
+      document.getElementById("summaryBox").textContent = "";
+      if (radarChart) {
+        radarChart.destroy();
+        radarChart = null;
+      }
+    });
+  </script>
+</body>
+</html>
